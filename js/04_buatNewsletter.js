@@ -118,8 +118,8 @@ function getFinalHTML() {
     if (!htmlContent) return ""; // Cegah error jika template belum ter-load
 
     // Data Statis
-    const coverPath = "https://github.com/calvinwijaya/sigma/blob/main/template/cover_newsletter.png?raw=true";
-    const akreditasiPath = "https://github.com/calvinwijaya/sigma/blob/main/template/akreditasi.png?raw=true";
+    const coverPath = "https://raw.githubusercontent.com/calvinwijaya/sigma/main/template/cover_newsletter.png";
+    const akreditasiPath = "https://raw.githubusercontent.com/calvinwijaya/sigma/main/template/akreditasi.png";
 
     // Data Dinamis Utama
     const judul = document.getElementById("inputJudul").value || "Judul Newsletter";
