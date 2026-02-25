@@ -118,7 +118,7 @@ function getFinalHTML() {
     if (!htmlContent) return ""; // Cegah error jika template belum ter-load
 
     // Data Statis
-    const coverPath = "https://i.postimg.cc/QtCQDQk4/cover_newsletter.png";
+    const coverPath = "https://i.postimg.cc/QtCQDQk4/cover-newsletter.png";
     const akreditasiPath = "https://i.postimg.cc/mZcnNCfh/akreditasi.png";
 
     // Data Dinamis Utama
