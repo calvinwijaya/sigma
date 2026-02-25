@@ -119,7 +119,7 @@ function getFinalHTML() {
 
     // Data Statis
     const coverPath = "https://i.postimg.cc/QtCQDQk4/cover-newsletter.png";
-    const akreditasiPath = "https://i.postimg.cc/mZcnNCfh/akreditasi.png";
+    const akreditasiPath = "https://i.postimg.cc/4dMs2Gxq/akreditasi.png";
 
     // Data Dinamis Utama
     const judul = document.getElementById("inputJudul").value || "Judul Newsletter";
