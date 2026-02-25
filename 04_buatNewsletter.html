@@ -15,6 +15,10 @@
                         <select class="form-select border-0 shadow-sm" id="templateSelector">
                             <option value="pengumuman">Template 1 - Pengumuman</option>
                             <option value="informasi">Template 2 - Informasi Berita</option>
+                            <option value ="survei">Template 3 - Survei/ Angket</option>
+                            <option value ="undangan">Template 4 - Undangan Acara</option>
+                            <option value ="profil">Template 5 - Profil/ Highlight</option>
+                            <option value ="promosi">Template 6 - Promosi/ Donasi</option>
                         </select>
                     </div>
 
@@ -68,6 +72,27 @@
                                 <input type="text" class="form-control form-control-sm" id="k2_link" placeholder="Link web...">
                             </div>
                         </div>
+                    </div>
+
+                    <div id="sectionUndangan" class="row mb-4" style="display: none;">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Waktu Acara</label>
+                            <input type="text" class="form-control form-control-sm" id="inputWaktu" placeholder="Misal: Sabtu, 15 Ags 2026 - 09.00 WIB">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Lokasi Acara</label>
+                            <input type="text" class="form-control form-control-sm" id="inputLokasi" placeholder="Misal: Ruang Sidang Lt. 1 DTGD">
+                        </div>
+                    </div>
+
+                    <div id="sectionProfil" class="mb-4" style="display: none;">
+                        <label class="form-label fw-semibold small">URL Foto Profil Alumni</label>
+                        <input type="url" class="form-control form-control-sm" id="inputFotoProfil" placeholder="https://link-gambar-profil.png">
+                    </div>
+
+                    <div id="sectionPromosi" class="mb-4" style="display: none;">
+                        <label class="form-label fw-semibold small">URL Gambar Produk / Donasi</label>
+                        <input type="url" class="form-control form-control-sm" id="inputGambarPromo" placeholder="https://link-gambar-produk.png">
                     </div>
 
                 </div>

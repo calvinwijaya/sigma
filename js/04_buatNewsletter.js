@@ -1,6 +1,10 @@
 var quillEditor;
-var rawTemplate1 = "";
-var rawTemplate2 = "";
+var rawTemplate1 = ""; // Pengumuman
+var rawTemplate2 = ""; // Informasi
+var rawTemplate3 = ""; // Survei
+var rawTemplate4 = ""; // Undangan
+var rawTemplate5 = ""; // Profil
+var rawTemplate6 = ""; // Promosi
 var editDraftId = null;
 
 // Fungsi inisialisasi utama (Dipanggil otomatis saat script di-load)
@@ -9,6 +13,10 @@ async function initNewsletterPage() {
         // 1. Ambil template mentah dan simpan di memori
         rawTemplate1 = await fetch("template/template_pengumuman.html").then(res => res.text());
         rawTemplate2 = await fetch("template/template_informasi.html").then(res => res.text());
+        rawTemplate3 = await fetch("template/template_survei.html").then(res => res.text());
+        rawTemplate4 = await fetch("template/template_undangan.html").then(res => res.text());
+        rawTemplate5 = await fetch("template/template_profil.html").then(res => res.text());
+        rawTemplate6 = await fetch("template/template_promosi.html").then(res => res.text());
 
         // 2. Inisialisasi Quill Editor
         if (document.getElementById('editor')) {
@@ -62,11 +70,14 @@ async function initNewsletterPage() {
             document.getElementById("inputSubjudul").value = form.subjudul || "";
             if (quillEditor) quillEditor.root.innerHTML = form.paragraf || "";
 
-            // 2. Isi form layout spesifik
-            if (form.templateType === "pengumuman") {
+            // 2. Isi form CTA Button (Ada di 5 Template)
+            if (form.templateType !== "informasi") {
                 if (document.getElementById("btnTeks")) document.getElementById("btnTeks").value = form.btnTeks || "";
                 if (document.getElementById("btnLink")) document.getElementById("btnLink").value = form.btnLink || "";
-            } else {
+            }
+
+            // 3. Isi form layout spesifik
+            if (form.templateType === "pengumuman") {
                 if (document.getElementById("k1_gambar")) document.getElementById("k1_gambar").value = form.k1_gambar || "";
                 if (document.getElementById("k1_judul")) document.getElementById("k1_judul").value = form.k1_judul || "";
                 if (document.getElementById("k1_teks")) document.getElementById("k1_teks").value = form.k1_teks || "";
@@ -75,9 +86,16 @@ async function initNewsletterPage() {
                 if (document.getElementById("k2_judul")) document.getElementById("k2_judul").value = form.k2_judul || "";
                 if (document.getElementById("k2_teks")) document.getElementById("k2_teks").value = form.k2_teks || "";
                 if (document.getElementById("k2_link")) document.getElementById("k2_link").value = form.k2_link || "";
+            } else if (form.templateType === "undangan") {
+                if (document.getElementById("inputWaktu")) document.getElementById("inputWaktu").value = form.waktu || "";
+                if (document.getElementById("inputLokasi")) document.getElementById("inputLokasi").value = form.lokasi || "";
+            } else if (form.templateType === "profil") {
+                if (document.getElementById("inputFotoProfil")) document.getElementById("inputFotoProfil").value = form.fotoProfil || "";
+            } else if (form.templateType === "promosi") {
+                if (document.getElementById("inputGambarPromo")) document.getElementById("inputGambarPromo").value = form.gambarPromo || "";
             }
 
-            // 3. Ubah Teks Tombol Simpan menjadi Update
+            // 4. Ubah Teks Tombol Simpan menjadi Update
             const saveBtn = document.querySelector('button[onclick="saveToDraft()"]');
             if (saveBtn) {
                 saveBtn.innerHTML = '<i class="bi bi-pencil-square me-2"></i> Update Draft';
@@ -98,28 +116,57 @@ async function initNewsletterPage() {
 
 function toggleTemplateFields() {
     const templateType = document.getElementById("templateSelector").value;
-    const secDuaKolom = document.getElementById("sectionDuaKolom");
-    const secButtonUtama = document.getElementById("sectionButtonUtama");
+    
+    const sections = ["sectionDuaKolom", "sectionButtonUtama", "sectionUndangan", "sectionProfil", "sectionPromosi"];
+    sections.forEach(sec => {
+        const el = document.getElementById(sec);
+        if(el) el.style.display = "none";
+    });
 
     if (templateType === "informasi") {
-        secDuaKolom.style.display = "block";
-        secButtonUtama.style.display = "none";
+        const el = document.getElementById("sectionDuaKolom");
+        if(el) el.style.display = "block";
     } else {
-        secDuaKolom.style.display = "none";
-        secButtonUtama.style.display = "flex";
+        const btnSec = document.getElementById("sectionButtonUtama");
+        if(btnSec) btnSec.style.display = "flex";
+
+        // Tampilkan field tambahan untuk template tertentu
+        if (templateType === "undangan") {
+            const el = document.getElementById("sectionUndangan");
+            if(el) el.style.display = "flex";
+        } else if (templateType === "profil") {
+            const el = document.getElementById("sectionProfil");
+            if(el) el.style.display = "block";
+        } else if (templateType === "promosi") {
+            const el = document.getElementById("sectionPromosi");
+            if(el) el.style.display = "block";
+        }
     }
 }
 
 // Menghasilkan HTML Final berdasarkan isian form
 function getFinalHTML() {
     const templateType = document.getElementById("templateSelector").value;
-    let htmlContent = templateType === "pengumuman" ? rawTemplate1 : rawTemplate2;
+    let htmlContent = ""
 
-    if (!htmlContent) return ""; // Cegah error jika template belum ter-load
+    if (templateType === "pengumuman") htmlContent = rawTemplate1;
+    else if (templateType === "informasi") htmlContent = rawTemplate2;
+    else if (templateType === "survei") htmlContent = rawTemplate3;
+    else if (templateType === "undangan") htmlContent = rawTemplate4;
+    else if (templateType === "profil") htmlContent = rawTemplate5;
+    else if (templateType === "promosi") htmlContent = rawTemplate6;
+
+    if (!htmlContent) return "";
 
     // Data Statis
     const coverPath = "https://i.postimg.cc/QtCQDQk4/cover-newsletter.png";
     const akreditasiPath = "https://i.postimg.cc/4dMs2Gxq/akreditasi.png";
+
+    // Ikon Sosial Media
+    const iconWeb = "https://i.postimg.cc/rzXx5vXM/website.png";
+    const iconIg  = "https://i.postimg.cc/DfWNdLk6/instagram.png";
+    const iconYt  = "https://i.postimg.cc/RC3YQK5H/youtube.png";
+    const iconMail = "https://i.postimg.cc/dQ7fmrP1/email.png";
 
     // Data Dinamis Utama
     const judul = document.getElementById("inputJudul").value || "Judul Newsletter";
@@ -132,11 +179,15 @@ function getFinalHTML() {
     htmlContent = htmlContent.replace(/{{JUDUL}}/g, judul);
     htmlContent = htmlContent.replace(/{{SUBJUDUL}}/g, subjudul);
     htmlContent = htmlContent.replace(/{{PARAGRAF_UTAMA}}/g, paragraf);
+    htmlContent = htmlContent.replace(/{{ICON_WEB}}/g, iconWeb);
+    htmlContent = htmlContent.replace(/{{ICON_IG}}/g, iconIg);
+    htmlContent = htmlContent.replace(/{{ICON_YT}}/g, iconYt);
+    htmlContent = htmlContent.replace(/{{ICON_MAIL}}/g, iconMail);
 
     // Replace spesifik per layout
-    if (templateType === "pengumuman") {
-        const btnTeks = document.getElementById("btnTeks").value;
-        const btnLink = document.getElementById("btnLink").value || "#";
+    if (templateType !== "informasi") {
+        const btnTeks = document.getElementById("btnTeks") ? document.getElementById("btnTeks").value : "";
+        const btnLink = document.getElementById("btnLink") ? document.getElementById("btnLink").value : "#";
         
         if (!btnTeks) {
             htmlContent = htmlContent.replace(/{{TOMBOL_AKSI}}/g, "");
@@ -151,16 +202,25 @@ function getFinalHTML() {
             </table>`;
             htmlContent = htmlContent.replace(/{{TOMBOL_AKSI}}/g, buttonHTML);
         }
-    } else {
-        htmlContent = htmlContent.replace(/{{GAMBAR_KOLOM_1}}/g, document.getElementById("k1_gambar").value || "https://placehold.co/300x140?text=Gambar+1");
-        htmlContent = htmlContent.replace(/{{JUDUL_KOLOM_1}}/g, document.getElementById("k1_judul").value || "Judul Artikel 1");
-        htmlContent = htmlContent.replace(/{{TEKS_KOLOM_1}}/g, document.getElementById("k1_teks").value || "Deskripsi singkat artikel 1...");
-        htmlContent = htmlContent.replace(/{{LINK_KOLOM_1}}/g, document.getElementById("k1_link").value || "#");
+    }
 
-        htmlContent = htmlContent.replace(/{{GAMBAR_KOLOM_2}}/g, document.getElementById("k2_gambar").value || "https://placehold.co/300x140?text=Gambar+2");
-        htmlContent = htmlContent.replace(/{{JUDUL_KOLOM_2}}/g, document.getElementById("k2_judul").value || "Judul Artikel 2");
-        htmlContent = htmlContent.replace(/{{TEKS_KOLOM_2}}/g, document.getElementById("k2_teks").value || "Deskripsi singkat artikel 2...");
-        htmlContent = htmlContent.replace(/{{LINK_KOLOM_2}}/g, document.getElementById("k2_link").value || "#");
+    // Replace Spesifik per Layout
+    if (templateType === "informasi") {
+        htmlContent = htmlContent.replace(/{{GAMBAR_KOLOM_1}}/g, document.getElementById("k1_gambar")?.value || "https://placehold.co/300x140?text=Gambar+1");
+        htmlContent = htmlContent.replace(/{{JUDUL_KOLOM_1}}/g, document.getElementById("k1_judul")?.value || "Judul Artikel 1");
+        htmlContent = htmlContent.replace(/{{TEKS_KOLOM_1}}/g, document.getElementById("k1_teks")?.value || "Deskripsi singkat...");
+        htmlContent = htmlContent.replace(/{{LINK_KOLOM_1}}/g, document.getElementById("k1_link")?.value || "#");
+        htmlContent = htmlContent.replace(/{{GAMBAR_KOLOM_2}}/g, document.getElementById("k2_gambar")?.value || "https://placehold.co/300x140?text=Gambar+2");
+        htmlContent = htmlContent.replace(/{{JUDUL_KOLOM_2}}/g, document.getElementById("k2_judul")?.value || "Judul Artikel 2");
+        htmlContent = htmlContent.replace(/{{TEKS_KOLOM_2}}/g, document.getElementById("k2_teks")?.value || "Deskripsi singkat...");
+        htmlContent = htmlContent.replace(/{{LINK_KOLOM_2}}/g, document.getElementById("k2_link")?.value || "#");
+    } else if (templateType === "undangan") {
+        htmlContent = htmlContent.replace(/{{WAKTU_ACARA}}/g, document.getElementById("inputWaktu")?.value || "TBA");
+        htmlContent = htmlContent.replace(/{{LOKASI_ACARA}}/g, document.getElementById("inputLokasi")?.value || "TBA");
+    } else if (templateType === "profil") {
+        htmlContent = htmlContent.replace(/{{FOTO_PROFIL}}/g, document.getElementById("inputFotoProfil")?.value || "https://placehold.co/150x150?text=Profil");
+    } else if (templateType === "promosi") {
+        htmlContent = htmlContent.replace(/{{GAMBAR_PROMO}}/g, document.getElementById("inputGambarPromo")?.value || "https://placehold.co/300x300?text=Promo");
     }
 
     // =========================================
@@ -182,7 +242,11 @@ function getFinalHTML() {
         k2_gambar: document.getElementById("k2_gambar") ? document.getElementById("k2_gambar").value : "",
         k2_judul: document.getElementById("k2_judul") ? document.getElementById("k2_judul").value : "",
         k2_teks: document.getElementById("k2_teks") ? document.getElementById("k2_teks").value : "",
-        k2_link: document.getElementById("k2_link") ? document.getElementById("k2_link").value : ""
+        k2_link: document.getElementById("k2_link") ? document.getElementById("k2_link").value : "",
+        waktu: document.getElementById("inputWaktu")?.value || "",
+        lokasi: document.getElementById("inputLokasi")?.value || "",
+        fotoProfil: document.getElementById("inputFotoProfil")?.value || "",
+        gambarPromo: document.getElementById("inputGambarPromo")?.value || ""
     };
 
     // 2. Ubah jadi String JSON, lalu encode ke Base64 (agar karakter HTML/kutip tidak merusak kode)
