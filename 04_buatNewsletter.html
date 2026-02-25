@@ -1,0 +1,89 @@
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold text-primary mb-0">Buat Newsletter (Broadcast)</h3>
+        <button class="btn btn-primary fw-bold shadow-sm" onclick="saveToDraft()">
+            <i class="bi bi-floppy me-2"></i> Simpan Draft
+        </button>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 mb-4" style="max-height: 80vh; overflow-y: auto;">
+                <div class="card-body bg-light rounded">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Pilih Layout / Template</label>
+                        <select class="form-select border-0 shadow-sm" id="templateSelector">
+                            <option value="pengumuman">Template 1 - Pengumuman</option>
+                            <option value="informasi">Template 2 - Informasi Berita</option>
+                        </select>
+                    </div>
+
+                    <hr class="text-muted">
+
+                    <h5 class="fw-bold text-secondary mb-3">Konten Utama</h5>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Judul Newsletter <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="inputJudul" placeholder="Contoh: Undangan Reuni Akbar">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Sub-judul (Opsional)</label>
+                        <input type="text" class="form-control" id="inputSubjudul" placeholder="Contoh: Terbuka untuk seluruh angkatan">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">Isi Paragraf Utama</label>
+                        <div class="bg-white">
+                            <div id="editor" style="height: 200px;"></div>
+                        </div>
+                        <div class="form-text small">Anda bisa block teks untuk menebalkan, menambah link, atau list.</div>
+                    </div>
+
+                    <div id="sectionButtonUtama" class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Teks Tombol Aksi</label>
+                            <input type="text" class="form-control form-control-sm" id="btnTeks" placeholder="Kosongkan jika tidak butuh">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Link Tombol</label>
+                            <input type="url" class="form-control form-control-sm" id="btnLink" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div id="sectionDuaKolom" style="display: none;">
+                        <hr class="text-muted">
+                        <h5 class="fw-bold text-secondary mb-3">Konten Berita (Kolom Bawah)</h5>
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h6 class="fw-bold text-primary">Artikel 1</h6>
+                                <input type="text" class="form-control form-control-sm mb-2" id="k1_gambar" placeholder="URL Gambar...">
+                                <input type="text" class="form-control form-control-sm mb-2" id="k1_judul" placeholder="Judul Artikel...">
+                                <textarea class="form-control form-control-sm mb-2" id="k1_teks" rows="2" placeholder="Cuplikan teks..."></textarea>
+                                <input type="text" class="form-control form-control-sm" id="k1_link" placeholder="Link web...">
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary">Artikel 2</h6>
+                                <input type="text" class="form-control form-control-sm mb-2" id="k2_gambar" placeholder="URL Gambar...">
+                                <input type="text" class="form-control form-control-sm mb-2" id="k2_judul" placeholder="Judul Artikel...">
+                                <textarea class="form-control form-control-sm mb-2" id="k2_teks" rows="2" placeholder="Cuplikan teks..."></textarea>
+                                <input type="text" class="form-control form-control-sm" id="k2_link" placeholder="Link web...">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0" style="height: 80vh;">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="bi bi-eye text-info me-2"></i> Live Preview</span>
+                    <span class="badge bg-secondary">Real-time</span>
+                </div>
+                <div class="card-body p-0 bg-secondary" style="overflow: hidden;">
+                    <iframe id="livePreviewFrame" style="width: 100%; height: 100%; border: none; background: #f4f5f7;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
