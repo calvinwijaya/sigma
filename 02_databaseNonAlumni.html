@@ -1,0 +1,87 @@
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-success mb-0">Database Non-Alumni</h3>
+        <button class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" onclick="refreshData()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+        </button>
+    </div>
+
+    <div class="alert alert-success border-0 shadow-sm mb-4 d-flex align-items-center" style="border-radius: 10px;">
+        <i class="bi bi-info-circle-fill me-2 fs-5"></i> 
+        <span>Data terakhir diperbarui: 24 Februari 2026</span>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-light rounded">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Cari Nama Instansi</label>
+                    <div class="input-group input-group-sm shadow-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0" id="searchNama" placeholder="Ketik nama..." onkeyup="applyFilters()">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted">Kategori</label>
+                    <select class="form-select form-select-sm border-0 shadow-sm" id="filterKategori" onchange="applyFilters()">
+                        <option value="ALL">Semua Kategori</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted">Lingkup</label>
+                    <select class="form-select form-select-sm border-0 shadow-sm" id="filterLingkup" onchange="applyFilters()">
+                        <option value="ALL">Semua Lingkup</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted">Lokasi Spesifik</label>
+                    <select class="form-select form-select-sm border-0 shadow-sm" id="filterLokasi" onchange="applyFilters()">
+                        <option value="ALL">Semua Lokasi</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted d-block">Urutkan Hasil</label>
+                    <div class="btn-group w-100 shadow-sm" role="group">
+                        <button type="button" id="btnSortNama" class="btn btn-sm btn-light border btn-sort" onclick="sortData('nama')">
+                            <i class="bi bi-sort-alpha-down"></i> A-Z Nama
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <button class="btn btn-sm btn-outline-danger rounded-pill px-3 shadow-sm" onclick="clearFilters()">
+                    <i class="bi bi-x-circle me-1"></i> Clear Filter
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                <table class="table table-hover mb-0">
+                    <thead class="text-white position-sticky top-0 shadow-sm align-middle" style="z-index: 1; background-color: #198754;">
+                        <tr class="text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.5px;">
+                            <th class="text-center py-3 border-bottom-0" style="width: 5%;">No</th>
+                            <th class="py-3 border-bottom-0" style="width: 15%;">Kategori</th>
+                            <th class="py-3 border-bottom-0" style="width: 25%;">Nama Instansi</th>
+                            <th class="py-3 border-bottom-0" style="width: 20%;">Email</th>
+                            <th class="py-3 border-bottom-0" style="width: 10%;">Lingkup</th>
+                            <th class="py-3 border-bottom-0" style="width: 15%;">Lokasi</th>
+                            <th class="text-center py-3 border-bottom-0" style="width: 10%;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="border-top-0 align-middle">
+                        <tr><td colspan="7" class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-start mb-4">
+        <button class="btn btn-success rounded-pill px-4 shadow-sm fw-bold" onclick="addData()">
+            <i class="bi bi-plus-circle-fill me-2"></i> Tambah Data Baru
+        </button>
+    </div>
+</div>

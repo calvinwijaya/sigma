@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const pageKey = params.get("page");
     const routes = { 'databaseAlumni': '01_databaseAlumni.html',
+                     'databaseNonAlumni': '02_databaseNonAlumni.html',
                      'buatNewsletter': '04_buatNewsletter.html',
                      'kirimBroadcast': '05_kirimBroadcast.html'
      };
@@ -91,6 +92,7 @@ function loadPage(eventOrPage, pagePath, key) {
             if (activeLink) activeLink.classList.add('active');
 
             if (finalKey === 'databaseAlumni') loadScript('js/01_databaseAlumni.js')
+            else if (finalKey === 'databaseNonAlumni') loadScript('js/02_databaseNonAlumni.js')
             else if (finalKey === 'buatNewsletter') loadScript('js/04_buatNewsletter.js')
             else if (finalKey === 'kirimBroadcast') loadScript('js/05_kirimBroadcast.js');
         })

@@ -90,26 +90,48 @@
                 
                 <div class="mb-3">
                     <label class="form-label small fw-semibold">Layer 1: Target Audiens</label>
-                    <select class="form-select shadow-sm" id="filterLayer1">
+                    <select class="form-select shadow-sm" id="filterLayer1" onchange="toggleFilterView()">
                         <option value="alumni">Data Alumni</option>
-                        <option value="non_alumni" disabled>Data Non-Alumni (Belum tersedia)</option>
+                        <option value="non_alumni">Data Non-Alumni</option>
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label small fw-semibold">Layer 2: Metode Filter</label>
-                    <select class="form-select shadow-sm" id="filterLayer2" onchange="updateLayer3()">
-                        <option value="all">Kirim ke Semua (Tanpa Filter)</option>
-                        <option value="angkatan">Berdasarkan Angkatan</option>
-                        <option value="kategori">Berdasarkan Kategori Umur/Angkatan</option>
-                        <option value="lokasi">Berdasarkan Lokasi</option>
-                    </select>
-                </div>
-
-                <div class="mb-3" id="layer3Container" style="display: none;">
-                    <label class="form-label small fw-semibold text-primary">Layer 3: Pilih Spesifikasi</label>
-                    <select class="form-select border-primary shadow-sm" id="filterLayer3" onchange="calculateRecipients()">
+                <div id="alumniFiltersContainer">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Layer 2: Metode Filter</label>
+                        <select class="form-select shadow-sm" id="filterLayer2" onchange="updateLayer3()">
+                            <option value="all">Kirim ke Semua Alumni (Tanpa Filter)</option>
+                            <option value="angkatan">Berdasarkan Angkatan</option>
+                            <option value="kategori">Berdasarkan Kategori Umur/Angkatan</option>
+                            <option value="lokasi">Berdasarkan Lokasi</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3" id="layer3Container" style="display: none;">
+                        <label class="form-label small fw-semibold text-primary">Layer 3: Pilih Spesifikasi</label>
+                        <select class="form-select border-primary shadow-sm" id="filterLayer3" onchange="calculateRecipients()"></select>
+                    </div>
+                </div>
+
+                <div id="nonAlumniFiltersContainer" style="display: none;">
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Kategori Instansi</label>
+                        <select class="form-select shadow-sm border-success" id="naFilterKategori" onchange="calculateRecipients()">
+                            <option value="ALL">Semua Kategori</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Lingkup Wilayah</label>
+                        <select class="form-select shadow-sm border-success" id="naFilterLingkup" onchange="calculateRecipients()">
+                            <option value="ALL">Semua Lingkup</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Lokasi Spesifik (Prov/Negara)</label>
+                        <select class="form-select shadow-sm border-success" id="naFilterLokasi" onchange="calculateRecipients()">
+                            <option value="ALL">Semua Lokasi</option>
+                        </select>
+                    </div>
                 </div>
 
                 <hr>

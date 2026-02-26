@@ -2,15 +2,23 @@
 var currentDraftId = null;
 var currentDraftName = null;
 var isEditMode = false;
+var fileIdToSend = null;
+var finalTargetEmails = [];
+
+// Variabel Alumni
 var alumniData = [];
 var uniqueAngkatan = [];
 var uniqueLokasi = [];
-var finalTargetEmails = [];
-var fileIdToSend = null;
+
+// Variabel Non-Alumni
+var nonAlumniData = [];
+var uniqueNaKategori = [];
+var uniqueNaLingkup = [];
+var uniqueNaLokasi = [];
 
 // Jalankan fungsi saat halaman dimuat
 loadDrafts();
-loadAlumniDataForFilter();
+loadAllDataForFilter();
 loadLogAktivitas();
 
 
@@ -197,17 +205,29 @@ function deleteCurrentDraft() {
 }
 
 // ==========================================
-// MENGAMBIL DATA ALUMNI & LOG
+// MENGAMBIL DATA ALUMNI & NON-ALUMNI
 // ==========================================
-function loadAlumniDataForFilter() {
+function loadAllDataForFilter() {
+    // 1. Fetch Data Alumni
     fetch(`${API_SENDER_URL}?action=getData`)
         .then(res => res.json())
         .then(res => {
             if (res.status === "ok") {
                 alumniData = res.data;
-                // Ekstrak data unik
                 uniqueAngkatan = [...new Set(alumniData.map(item => item.angkatan).filter(a => a > 0))].sort((a,b) => a-b);
                 uniqueLokasi = [...new Set(alumniData.map(item => item.lokasi).filter(l => l !== ""))].sort();
+            }
+        });
+
+    // 2. Fetch Data Non-Alumni
+    fetch(`${API_SENDER_URL}?action=getNonAlumniData`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === "ok") {
+                nonAlumniData = res.data;
+                uniqueNaKategori = [...new Set(nonAlumniData.map(d => d.kategori).filter(x => x))].sort();
+                uniqueNaLingkup = [...new Set(nonAlumniData.map(d => d.lingkup).filter(x => x))].sort();
+                uniqueNaLokasi = [...new Set(nonAlumniData.map(d => d.lokasi).filter(x => x))].sort();
             }
         });
 }
@@ -253,20 +273,47 @@ function loadLogAktivitas() {
 // ==========================================
 // LOGIKA MODAL PENGIRIMAN & FILTERING
 // ==========================================
-
-// Panggil fungsi ini dari tombol hijau di daftar tabel
 function openSendModal(fileId, fileName) {
     fileIdToSend = fileId;
     document.getElementById("sendDraftNameDisplay").innerText = "Draft: " + fileName.replace('.html', '').replace(/_/g, ' ');
     
-    // Reset Form
+    // Reset Form ke Mode Default (Alumni)
     document.getElementById("filterLayer1").value = "alumni";
-    document.getElementById("filterLayer2").value = "all";
-    updateLayer3();
+    toggleFilterView(); // Trigger perubahan tampilan
     
-    // Munculkan Modal
     const sendModal = new bootstrap.Modal(document.getElementById('sendModal'));
     sendModal.show();
+}
+
+// Fungsi Switch Antarmuka Alumni vs Non-Alumni
+function toggleFilterView() {
+    const layer1 = document.getElementById("filterLayer1").value;
+    
+    if (layer1 === "alumni") {
+        document.getElementById("alumniFiltersContainer").style.display = "block";
+        document.getElementById("nonAlumniFiltersContainer").style.display = "none";
+        document.getElementById("filterLayer2").value = "all";
+        updateLayer3();
+    } else {
+        document.getElementById("alumniFiltersContainer").style.display = "none";
+        document.getElementById("nonAlumniFiltersContainer").style.display = "block";
+        
+        // Populate Dropdown Non-Alumni
+        fillNaSelect("naFilterKategori", uniqueNaKategori, "Kategori");
+        fillNaSelect("naFilterLingkup", uniqueNaLingkup, "Lingkup");
+        fillNaSelect("naFilterLokasi", uniqueNaLokasi, "Lokasi");
+        
+        calculateRecipients();
+    }
+}
+
+function fillNaSelect(id, optionsArr, label) {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = `<option value="ALL">Semua ${label}</option>`;
+    optionsArr.forEach(opt => {
+        sel.innerHTML += `<option value="${opt}">${opt}</option>`;
+    });
 }
 
 function updateLayer3() {
@@ -280,55 +327,63 @@ function updateLayer3() {
         container3.style.display = "none";
     } else {
         container3.style.display = "block";
-        
         if (layer2 === "angkatan") {
             select3.innerHTML = `<option value="ALL">Pilih Semua Angkatan</option>`;
-            uniqueAngkatan.forEach(angk => {
-                select3.innerHTML += `<option value="${angk}">Angkatan ${angk}</option>`;
-            });
-        } 
-        else if (layer2 === "kategori") {
+            uniqueAngkatan.forEach(angk => select3.innerHTML += `<option value="${angk}">Angkatan ${angk}</option>`);
+        } else if (layer2 === "kategori") {
             select3.innerHTML = `
                 <option value="ALL">Pilih Semua Kategori</option>
                 <option value="senior">Alumni Senior (< 1990)</option>
                 <option value="produktif">Alumni Produktif (1990 - 2010)</option>
                 <option value="muda">Alumni Muda (> 2010)</option>
             `;
-        } 
-        else if (layer2 === "lokasi") {
+        } else if (layer2 === "lokasi") {
             select3.innerHTML = `<option value="ALL">Pilih Semua Lokasi</option>`;
-            uniqueLokasi.forEach(lok => {
-                select3.innerHTML += `<option value="${lok}">${lok}</option>`;
-            });
+            uniqueLokasi.forEach(lok => select3.innerHTML += `<option value="${lok}">${lok}</option>`);
         }
     }
-    
-    calculateRecipients(); // Hitung ulang setiap layer berubah
+    calculateRecipients();
 }
 
 function calculateRecipients() {
-    const layer2 = document.getElementById("filterLayer2").value;
-    const layer3 = document.getElementById("filterLayer3") ? document.getElementById("filterLayer3").value : "ALL";
-    
+    const layer1 = document.getElementById("filterLayer1").value;
     let filtered = [];
 
-    if (layer2 === "all" || layer3 === "ALL") {
-        filtered = alumniData;
-    } else if (layer2 === "angkatan") {
-        filtered = alumniData.filter(d => String(d.angkatan) === String(layer3));
-    } else if (layer2 === "kategori") {
-        filtered = alumniData.filter(d => {
-            if (layer3 === "senior") return d.angkatan < 1990;
-            if (layer3 === "produktif") return d.angkatan >= 1990 && d.angkatan <= 2010;
-            if (layer3 === "muda") return d.angkatan > 2010;
-            return true;
+    if (layer1 === "alumni") {
+        const layer2 = document.getElementById("filterLayer2").value;
+        const layer3 = document.getElementById("filterLayer3") ? document.getElementById("filterLayer3").value : "ALL";
+        
+        if (layer2 === "all" || layer3 === "ALL") {
+            filtered = alumniData;
+        } else if (layer2 === "angkatan") {
+            filtered = alumniData.filter(d => String(d.angkatan) === String(layer3));
+        } else if (layer2 === "kategori") {
+            filtered = alumniData.filter(d => {
+                if (layer3 === "senior") return d.angkatan < 1990;
+                if (layer3 === "produktif") return d.angkatan >= 1990 && d.angkatan <= 2010;
+                if (layer3 === "muda") return d.angkatan > 2010;
+                return true;
+            });
+        } else if (layer2 === "lokasi") {
+            filtered = alumniData.filter(d => d.lokasi === layer3);
+        }
+    } 
+    else if (layer1 === "non_alumni") {
+        // FILTER KOMBINASI NON-ALUMNI (Logika AND)
+        const fKat = document.getElementById("naFilterKategori").value;
+        const fLing = document.getElementById("naFilterLingkup").value;
+        const fLok = document.getElementById("naFilterLokasi").value;
+
+        filtered = nonAlumniData.filter(d => {
+            const matchKat = (fKat === "ALL") || (String(d.kategori) === String(fKat));
+            const matchLing = (fLing === "ALL") || (String(d.lingkup) === String(fLing));
+            const matchLok = (fLok === "ALL") || (String(d.lokasi) === String(fLok));
+            return matchKat && matchLing && matchLok; // Ketiganya harus terpenuhi
         });
-    } else if (layer2 === "lokasi") {
-        filtered = alumniData.filter(d => d.lokasi === layer3);
     }
 
-    // Ekstrak array email saja
-    finalTargetEmails = filtered.map(d => d.email);
+    // Ekstrak array email saja yang valid
+    finalTargetEmails = filtered.map(d => d.email).filter(e => e && e.includes("@"));
     
     document.getElementById("recipientCount").innerText = finalTargetEmails.length;
     document.getElementById("btnExecuteSend").disabled = finalTargetEmails.length === 0;
@@ -345,7 +400,7 @@ function confirmSendBroadcast() {
 
     Swal.fire({
         title: 'Konfirmasi Pengiriman',
-        html: `Anda akan mengirimkan broadcast ini kepada <strong>${finalTargetEmails.length} Alumni</strong>.<br><br>`,
+        html: `Anda akan mengirimkan broadcast ini kepada <strong>${finalTargetEmails.length} Email</strong>.<br><br>`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#198754',
