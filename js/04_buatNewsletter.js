@@ -1,16 +1,14 @@
 var quillEditor;
-var rawTemplate1 = ""; // Pengumuman
-var rawTemplate2 = ""; // Informasi
-var rawTemplate3 = ""; // Survei
-var rawTemplate4 = ""; // Undangan
-var rawTemplate5 = ""; // Profil
-var rawTemplate6 = ""; // Promosi
+var rawTemplate1 = ""; 
+var rawTemplate2 = ""; 
+var rawTemplate3 = ""; 
+var rawTemplate4 = ""; 
+var rawTemplate5 = ""; 
+var rawTemplate6 = ""; 
 var editDraftId = null;
 
-// Fungsi inisialisasi utama (Dipanggil otomatis saat script di-load)
 async function initNewsletterPage() {
     try {
-        // 1. Ambil template mentah dan simpan di memori
         rawTemplate1 = await fetch("template/template_pengumuman.html").then(res => res.text());
         rawTemplate2 = await fetch("template/template_informasi.html").then(res => res.text());
         rawTemplate3 = await fetch("template/template_survei.html").then(res => res.text());
@@ -18,7 +16,6 @@ async function initNewsletterPage() {
         rawTemplate5 = await fetch("template/template_profil.html").then(res => res.text());
         rawTemplate6 = await fetch("template/template_promosi.html").then(res => res.text());
 
-        // 2. Inisialisasi Quill Editor
         if (document.getElementById('editor')) {
             const oldToolbar = document.querySelector('.ql-toolbar');
             if (oldToolbar) oldToolbar.remove();
@@ -33,51 +30,49 @@ async function initNewsletterPage() {
                     ]
                 }
             });
-
-            // 3. Pasang Event Listener untuk Live Preview
             quillEditor.on('text-change', updateLivePreview);
         }
 
-        // Pasang listener ke semua input form
         document.querySelectorAll('input, select, textarea').forEach(el => {
             el.addEventListener('input', updateLivePreview);
         });
 
-        // Event khusus saat ganti template
         document.getElementById("templateSelector").addEventListener('change', () => {
             toggleTemplateFields();
             updateLivePreview();
         });
 
-        // Set awal UI
         toggleTemplateFields();
+        togglePersonalisasi(); // Set status awal personalisasi
         updateLivePreview();
 
-        // =========================================
-        // CEK APAKAH SEDANG DALAM MODE EDIT (DARI HALAMAN 05)
-        // =========================================
+        // CEK MODE EDIT
         const editDataRaw = sessionStorage.getItem("editDraftData");
         if (editDataRaw) {
             const editData = JSON.parse(editDataRaw);
             editDraftId = editData.fileId;
             const form = editData.formData;
 
-            // 1. Isi form utama
             document.getElementById("templateSelector").value = form.templateType || "pengumuman";
-            toggleTemplateFields(); // Trigger UI agar menyesuaikan
+            toggleTemplateFields(); 
 
             document.getElementById("inputJudul").value = form.judul || "";
             document.getElementById("inputSubjudul").value = form.subjudul || "";
             if (quillEditor) quillEditor.root.innerHTML = form.paragraf || "";
 
-            // 2. Isi form CTA Button (Ada di 5 Template)
+            // Personalisasi
+            if (form.usePersonalisasi) {
+                document.getElementById("usePersonalisasi").checked = true;
+                document.getElementById("inputSapaan").value = form.sapaan || "Yth.";
+                togglePersonalisasi();
+            }
+
             if (form.templateType !== "informasi") {
                 if (document.getElementById("btnTeks")) document.getElementById("btnTeks").value = form.btnTeks || "";
                 if (document.getElementById("btnLink")) document.getElementById("btnLink").value = form.btnLink || "";
             }
 
-            // 3. Isi form layout spesifik
-            if (form.templateType === "pengumuman") {
+            if (form.templateType === "informasi") {
                 if (document.getElementById("k1_gambar")) document.getElementById("k1_gambar").value = form.k1_gambar || "";
                 if (document.getElementById("k1_judul")) document.getElementById("k1_judul").value = form.k1_judul || "";
                 if (document.getElementById("k1_teks")) document.getElementById("k1_teks").value = form.k1_teks || "";
@@ -95,18 +90,16 @@ async function initNewsletterPage() {
                 if (document.getElementById("inputGambarPromo")) document.getElementById("inputGambarPromo").value = form.gambarPromo || "";
             }
 
-            // 4. Ubah Teks Tombol Simpan menjadi Update
             const saveBtn = document.querySelector('button[onclick="saveToDraft()"]');
             if (saveBtn) {
                 saveBtn.innerHTML = '<i class="bi bi-pencil-square me-2"></i> Update Draft';
                 saveBtn.classList.replace('btn-primary', 'btn-warning');
             }
 
-            // 4. Update preview & Hapus session agar tidak terus-terusan mode edit
             updateLivePreview();
             sessionStorage.removeItem("editDraftData");
         } else {
-            editDraftId = null; // Pastikan null jika mode buat baru
+            editDraftId = null; 
         }
 
     } catch (err) {
@@ -116,7 +109,6 @@ async function initNewsletterPage() {
 
 function toggleTemplateFields() {
     const templateType = document.getElementById("templateSelector").value;
-    
     const sections = ["sectionDuaKolom", "sectionButtonUtama", "sectionUndangan", "sectionProfil", "sectionPromosi"];
     sections.forEach(sec => {
         const el = document.getElementById(sec);
@@ -129,8 +121,6 @@ function toggleTemplateFields() {
     } else {
         const btnSec = document.getElementById("sectionButtonUtama");
         if(btnSec) btnSec.style.display = "flex";
-
-        // Tampilkan field tambahan untuk template tertentu
         if (templateType === "undangan") {
             const el = document.getElementById("sectionUndangan");
             if(el) el.style.display = "flex";
@@ -144,10 +134,14 @@ function toggleTemplateFields() {
     }
 }
 
-// Menghasilkan HTML Final berdasarkan isian form
-function getFinalHTML() {
+function togglePersonalisasi() {
+    const isChecked = document.getElementById("usePersonalisasi").checked;
+    document.getElementById("sectionSapaan").style.display = isChecked ? "block" : "none";
+}
+
+function getFinalHTML(isPreview = false) {
     const templateType = document.getElementById("templateSelector").value;
-    let htmlContent = ""
+    let htmlContent = "";
 
     if (templateType === "pengumuman") htmlContent = rawTemplate1;
     else if (templateType === "informasi") htmlContent = rawTemplate2;
@@ -158,21 +152,27 @@ function getFinalHTML() {
 
     if (!htmlContent) return "";
 
-    // Data Statis
     const coverPath = "https://i.postimg.cc/QtCQDQk4/cover-newsletter.png";
     const akreditasiPath = "https://i.postimg.cc/4dMs2Gxq/akreditasi.png";
-
-    // Ikon Sosial Media
     const iconWeb = "https://i.postimg.cc/rzXx5vXM/website.png";
     const iconIg  = "https://i.postimg.cc/DfWNdLk6/instagram.png";
     const iconYt  = "https://i.postimg.cc/RC3YQK5H/youtube.png";
     const iconMail = "https://i.postimg.cc/dQ7fmrP1/email.png";
 
-    // Data Dinamis Utama
     const judul = document.getElementById("inputJudul").value || "Judul Newsletter";
     const subjudul = document.getElementById("inputSubjudul").value || "Sub-judul newsletter...";
-    // Ambil isi HTML dari Quill (Jika kosong, tampilkan teks default)
-    const paragraf = quillEditor.getText().trim() === "" ? "Isi paragraf utama..." : quillEditor.root.innerHTML; 
+    let paragraf = quillEditor.getText().trim() === "" ? "Isi paragraf utama..." : quillEditor.root.innerHTML; 
+
+    // LOGIKA PERSONALISASI
+    const usePersonalisasi = document.getElementById("usePersonalisasi").checked;
+    const sapaan = document.getElementById("inputSapaan").value.trim() || "Yth.";
+    
+    if (usePersonalisasi) {
+        // Jika mode preview, tampilkan nama dummy agar user tau posisinya
+        const namaPlaceholder = isPreview ? "<span style='color:#0d6efd; background:#e9ecef; padding:0 4px;'>Budi Santoso (Contoh)</span>" : "{{NAMA_PENERIMA}}";
+        const blokSapaan = `<div style="font-size: 15px; color: #333; margin-bottom: 12px; font-weight: bold;">${sapaan} ${namaPlaceholder},</div>`;
+        paragraf = blokSapaan + paragraf;
+    }
 
     htmlContent = htmlContent.replace(/{{COVER_IMAGE}}/g, coverPath);
     htmlContent = htmlContent.replace(/{{GAMBAR_AKREDITASI}}/g, akreditasiPath);
@@ -184,27 +184,20 @@ function getFinalHTML() {
     htmlContent = htmlContent.replace(/{{ICON_YT}}/g, iconYt);
     htmlContent = htmlContent.replace(/{{ICON_MAIL}}/g, iconMail);
 
-    // Replace spesifik per layout
     if (templateType !== "informasi") {
         const btnTeks = document.getElementById("btnTeks") ? document.getElementById("btnTeks").value : "";
         const btnLink = document.getElementById("btnLink") ? document.getElementById("btnLink").value : "#";
-        
         if (!btnTeks) {
             htmlContent = htmlContent.replace(/{{TOMBOL_AKSI}}/g, "");
         } else {
             const buttonHTML = `
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px;">
-                <tr>
-                    <td align="center">
-                        <a href="${btnLink}" style="background-color: #0d6efd; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">${btnTeks}</a>
-                    </td>
-                </tr>
+                <tr><td align="center"><a href="${btnLink}" style="background-color: #0d6efd; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">${btnTeks}</a></td></tr>
             </table>`;
             htmlContent = htmlContent.replace(/{{TOMBOL_AKSI}}/g, buttonHTML);
         }
     }
 
-    // Replace Spesifik per Layout
     if (templateType === "informasi") {
         htmlContent = htmlContent.replace(/{{GAMBAR_KOLOM_1}}/g, document.getElementById("k1_gambar")?.value || "https://placehold.co/300x140?text=Gambar+1");
         htmlContent = htmlContent.replace(/{{JUDUL_KOLOM_1}}/g, document.getElementById("k1_judul")?.value || "Judul Artikel 1");
@@ -223,45 +216,38 @@ function getFinalHTML() {
         htmlContent = htmlContent.replace(/{{GAMBAR_PROMO}}/g, document.getElementById("inputGambarPromo")?.value || "https://placehold.co/300x300?text=Promo");
     }
 
-    // =========================================
-    // FITUR BARU: INJEKSI DATA JSON KE DALAM HTML
-    // =========================================
-    // 1. Kumpulkan semua nilai form ke dalam satu objek
     const formState = {
         templateType: templateType,
         judul: judul,
         subjudul: subjudul,
-        paragraf: paragraf,
-        // Ambil data spesifik layout
-        btnTeks: document.getElementById("btnTeks") ? document.getElementById("btnTeks").value : "",
-        btnLink: document.getElementById("btnLink") ? document.getElementById("btnLink").value : "",
-        k1_gambar: document.getElementById("k1_gambar") ? document.getElementById("k1_gambar").value : "",
-        k1_judul: document.getElementById("k1_judul") ? document.getElementById("k1_judul").value : "",
-        k1_teks: document.getElementById("k1_teks") ? document.getElementById("k1_teks").value : "",
-        k1_link: document.getElementById("k1_link") ? document.getElementById("k1_link").value : "",
-        k2_gambar: document.getElementById("k2_gambar") ? document.getElementById("k2_gambar").value : "",
-        k2_judul: document.getElementById("k2_judul") ? document.getElementById("k2_judul").value : "",
-        k2_teks: document.getElementById("k2_teks") ? document.getElementById("k2_teks").value : "",
-        k2_link: document.getElementById("k2_link") ? document.getElementById("k2_link").value : "",
+        paragraf: paragraf.replace(/<div style="font-size: 15px; color: #333; margin-bottom: 12px; font-weight: bold;">.*?<\/div>/, ""), // Bersihkan sapaan dari raw text quill
+        usePersonalisasi: usePersonalisasi,
+        sapaan: sapaan,
+        btnTeks: document.getElementById("btnTeks")?.value || "",
+        btnLink: document.getElementById("btnLink")?.value || "",
+        k1_gambar: document.getElementById("k1_gambar")?.value || "",
+        k1_judul: document.getElementById("k1_judul")?.value || "",
+        k1_teks: document.getElementById("k1_teks")?.value || "",
+        k1_link: document.getElementById("k1_link")?.value || "",
+        k2_gambar: document.getElementById("k2_gambar")?.value || "",
+        k2_judul: document.getElementById("k2_judul")?.value || "",
+        k2_teks: document.getElementById("k2_teks")?.value || "",
+        k2_link: document.getElementById("k2_link")?.value || "",
         waktu: document.getElementById("inputWaktu")?.value || "",
         lokasi: document.getElementById("inputLokasi")?.value || "",
         fotoProfil: document.getElementById("inputFotoProfil")?.value || "",
         gambarPromo: document.getElementById("inputGambarPromo")?.value || ""
     };
 
-    // 2. Ubah jadi String JSON, lalu encode ke Base64 (agar karakter HTML/kutip tidak merusak kode)
     const jsonString = JSON.stringify(formState);
     const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
-
-    // 3. Sisipkan di bagian paling bawah HTML sebagai "Hidden Data"
     htmlContent += `\n<div id="sigma-metadata" style="display:none;" data-json="${base64Data}"></div>`;
 
     return htmlContent;
 }
 
-// Render ke dalam Iframe Live Preview
 function updateLivePreview() {
-    const finalHTML = getFinalHTML();
+    const finalHTML = getFinalHTML(true); // Param true = Tampilkan nama dummy Budi Santoso
     if (finalHTML) {
         const iframe = document.getElementById("livePreviewFrame");
         const doc = iframe.contentWindow.document;
@@ -273,48 +259,30 @@ function updateLivePreview() {
 
 async function saveToDraft() {
     const judul = document.getElementById("inputJudul").value;
-    if (!judul) {
-        Swal.fire("Peringatan", "Judul Newsletter wajib diisi!", "warning");
-        return;
-    }
+    if (!judul) { Swal.fire("Peringatan", "Judul Newsletter wajib diisi!", "warning"); return; }
     
     Loading.show();
-    const finalHTML = await getFinalHTML();
+    const finalHTML = await getFinalHTML(false); // Param false = Tulis {{NAMA_PENERIMA}} asli ke HTML
     if (!finalHTML) { Loading.hide(); return; }
 
-    // Tentukan apakah ini SIMPAN BARU atau UPDATE
     const actionType = editDraftId ? "editDraft" : "saveDraft";
-    const payloadData = {
-        judul: judul,
-        html_content: finalHTML,
-        timestamp: new Date().toISOString()
-    };
-    
-    // Jika update, wajib sertakan ID File-nya
-    if (editDraftId) {
-        payloadData.fileId = editDraftId;
-    }
+    const payloadData = { judul: judul, html_content: finalHTML, timestamp: new Date().toISOString() };
+    if (editDraftId) payloadData.fileId = editDraftId;
 
     fetch(API_NEWSLETTER_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         redirect: "follow",
-        body: JSON.stringify({
-            action: actionType,
-            data: payloadData
-        })
+        body: JSON.stringify({ action: actionType, data: payloadData })
     })
     .then(res => res.json())
     .then(res => {
         if(res.status === "ok") {
-            Swal.fire("Berhasil!", editDraftId ? "Draft berhasil di-update." : "Newsletter berhasil disimpan ke Draft.", "success");
-            
-            // Bersihkan form JIKA ini simpan baru
+            Swal.fire("Berhasil!", editDraftId ? "Draft berhasil di-update." : "Newsletter disimpan.", "success");
             if (!editDraftId) {
                 document.getElementById("inputJudul").value = "";
                 if (quillEditor) quillEditor.root.innerHTML = "";
             } else {
-                // Kembalikan ke mode normal (bukan edit) setelah berhasil update
                 editDraftId = null;
                 const saveBtn = document.querySelector('button[onclick="saveToDraft()"]');
                 if (saveBtn) {
@@ -322,16 +290,10 @@ async function saveToDraft() {
                     saveBtn.classList.replace('btn-warning', 'btn-primary');
                 }
             }
-        } else {
-            Swal.fire("Gagal", res.message || "Gagal memproses draft", "error");
-        }
+        } else { Swal.fire("Gagal", res.message || "Gagal memproses draft", "error"); }
     })
-    .catch(err => {
-        console.error("Error Fetch:", err);
-        Swal.fire("Error", "Gagal menghubungi server Google.", "error");
-    })
+    .catch(err => Swal.fire("Error", "Gagal menghubungi server Google.", "error"))
     .finally(() => Loading.hide());
 }
 
-// JALANKAN INISIALISASI
 initNewsletterPage();

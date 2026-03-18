@@ -383,7 +383,12 @@ function calculateRecipients() {
     }
 
     // Ekstrak array email saja yang valid
-    finalTargetEmails = filtered.map(d => d.email).filter(e => e && e.includes("@"));
+    finalTargetEmails = filtered
+        .filter(d => d.email && String(d.email).includes("@")) // Pastikan email valid
+        .map(d => ({ 
+            email: String(d.email).trim(), 
+            nama: d.nama || "Bapak/Ibu" // Fallback jika kolom nama kosong
+        }));
     
     document.getElementById("recipientCount").innerText = finalTargetEmails.length;
     document.getElementById("btnExecuteSend").disabled = finalTargetEmails.length === 0;
