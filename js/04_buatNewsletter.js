@@ -16,20 +16,88 @@ async function initNewsletterPage() {
         rawTemplate5 = await fetch("template/template_profil.html").then(res => res.text());
         rawTemplate6 = await fetch("template/template_promosi.html").then(res => res.text());
 
+        // 2. Inisialisasi Quill Editor
         if (document.getElementById('editor')) {
             const oldToolbar = document.querySelector('.ql-toolbar');
             if (oldToolbar) oldToolbar.remove();
+            
             quillEditor = new Quill('#editor', {
                 theme: 'snow',
                 placeholder: 'Ketik isi paragraf utama di sini...',
                 modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['link', 'image']
-                    ]
+                    toolbar: {
+                        container: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'image']
+                        ],
+                        // KODE SAKTI BARU: Override fungsi tombol gambar dengan SweetAlert2
+                        handlers: {
+                            image: function() {
+                                // 1. Ambil instance quill dan posisi kursor SAAT INI sebelum modal terbuka
+                                const quillInstance = this.quill;
+                                let range = quillInstance.getSelection(true); 
+                                let currentIndex = range ? range.index : quillInstance.getLength();
+
+                                // 2. Munculkan SweetAlert2 yang elegan
+                                Swal.fire({
+                                    title: '<h5 class="fw-bold text-primary mb-0"><i class="bi bi-image me-2"></i>Sisipkan Gambar</h5>',
+                                    html: `
+                                        <div class="text-start mt-3">
+                                            <label class="form-label fw-semibold small">Tautan Gambar / Link Google Drive</label>
+                                            <input type="url" id="swal-img-url" class="form-control" placeholder="https://drive.google.com/file/d/...">
+                                            <div class="form-text mt-2 text-danger" style="font-size: 0.75rem;">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>PENTING:</strong> Jika menggunakan Google Drive, pastikan akses file diset ke <strong>"Siapa saja memiliki link" (Anyone with the link) / Viewer</strong>.
+                                            </div>
+                                        </div>
+                                    `,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Sisipkan',
+                                    cancelButtonText: 'Batal',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary px-4',
+                                        cancelButton: 'btn btn-outline-secondary px-4 ms-2'
+                                    },
+                                    buttonsStyling: false,
+                                    preConfirm: () => {
+                                        const url = document.getElementById('swal-img-url').value.trim();
+                                        if (!url) {
+                                            Swal.showValidationMessage('Tautan gambar tidak boleh kosong!');
+                                        }
+                                        return url;
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed && result.value) {
+                                        let value = result.value;
+                                        
+                                        // 3. Logika Pintar: Auto-Convert link Google Drive
+                                        const driveRegex = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+                                        const match = value.match(driveRegex);
+                                        
+                                        if (match && match[1]) {
+                                            const fileId = match[1];
+                                            // PERBAIKAN: Gunakan endpoint 'thumbnail' dengan ukuran width=1000px
+                                            // Format ini lolos dari blokir Iframe browser dan peringatan Virus Google
+                                            value = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                                        } else if (value.includes('drive.google.com/open?id=')) {
+                                            const fileId = value.split('id=')[1].split('&')[0];
+                                            value = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                                        }
+
+                                        // 4. Sisipkan ke Quill di posisi kursor tadi
+                                        quillInstance.insertEmbed(currentIndex, 'image', value, Quill.sources.USER);
+                                        
+                                        // 5. Pindahkan kursor ke sebelah kanan gambar setelah disisipkan
+                                        quillInstance.setSelection(currentIndex + 1, Quill.sources.SILENT);
+                                    }
+                                });
+                            }
+                        }
+                    }
                 }
             });
+
+            // 3. Pasang Event Listener untuk Live Preview
             quillEditor.on('text-change', updateLivePreview);
         }
 
@@ -152,16 +220,17 @@ function getFinalHTML(isPreview = false) {
 
     if (!htmlContent) return "";
 
-    const coverPath = "https://i.postimg.cc/QtCQDQk4/cover-newsletter.png";
-    const akreditasiPath = "https://i.postimg.cc/4dMs2Gxq/akreditasi.png";
-    const iconWeb = "https://i.postimg.cc/rzXx5vXM/website.png";
-    const iconIg  = "https://i.postimg.cc/DfWNdLk6/instagram.png";
-    const iconYt  = "https://i.postimg.cc/RC3YQK5H/youtube.png";
-    const iconMail = "https://i.postimg.cc/dQ7fmrP1/email.png";
+    const coverPath = "https://calvinwijaya.github.io/sigma/template/cover_newsletter.png";
+    const akreditasiPath = "https://calvinwijaya.github.io/sigma/template/akreditasi.png";
+    const iconWeb = "https://calvinwijaya.github.io/sigma/template/website.png";
+    const iconIg  = "https://calvinwijaya.github.io/sigma/template/instagram.png";
+    const iconYt  = "https://calvinwijaya.github.io/sigma/template/youtube.png";
+    const iconMail = "https://calvinwijaya.github.io/sigma/template/email.png";
 
     const judul = document.getElementById("inputJudul").value || "Judul Newsletter";
     const subjudul = document.getElementById("inputSubjudul").value || "Sub-judul newsletter...";
     let paragraf = quillEditor.getText().trim() === "" ? "Isi paragraf utama..." : quillEditor.root.innerHTML; 
+    paragraf = paragraf.replace(/<img/g, '<img style="max-width: 100%; height: auto;"');
 
     // LOGIKA PERSONALISASI
     const usePersonalisasi = document.getElementById("usePersonalisasi").checked;
