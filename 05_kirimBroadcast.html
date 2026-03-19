@@ -1,9 +1,18 @@
 <div class="container-fluid py-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold text-primary mb-0">Kirim Newsletter (Broadcast)</h3>
-        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" onclick="loadDrafts(); loadLogAktivitas();">
-            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
-        </button>
+        
+        <div class="d-flex gap-2 align-items-center">
+            <label class="small text-muted fw-semibold mb-0 d-none d-md-block"><i class="bi bi-calendar-event me-1"></i>Filter:</label>
+            <input type="month" id="monthFilter" class="form-control form-control-sm shadow-sm" style="width: auto; cursor: pointer;" onchange="filterTablesByMonth()">
+            
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm" onclick="document.getElementById('monthFilter').value=''; filterTablesByMonth();" title="Reset Filter">
+                <i class="bi bi-x-circle"></i>
+            </button>
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" onclick="loadDrafts(); loadLogAktivitas();">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+            </button>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0 mb-4 rounded-3">

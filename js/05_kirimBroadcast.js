@@ -16,18 +16,77 @@ var uniqueNaKategori = [];
 var uniqueNaLingkup = [];
 var uniqueNaLokasi = [];
 
+// FITUR BARU: Variabel Penyimpan Data Master untuk Filter
+var allDrafts = [];
+var allLogs = [];
+
 // Jalankan fungsi saat halaman dimuat
 loadDrafts();
 loadAllDataForFilter();
 loadLogAktivitas();
 
+// ==========================================
+// FUNGSI FILTER WAKTU (BULAN & TAHUN)
+// ==========================================
+function filterTablesByMonth() {
+    const filterVal = document.getElementById("monthFilter").value; // Format: "YYYY-MM"
+    
+    let filteredDrafts = allDrafts;
+    let filteredLogs = allLogs;
+
+    if (filterVal) {
+        const [fYear, fMonth] = filterVal.split("-");
+
+        // Filter Draft
+        filteredDrafts = allDrafts.filter(d => {
+            const date = parseSistemDate(d.lastUpdated);
+            return date && date.getFullYear() == fYear && (date.getMonth() + 1) == fMonth;
+        });
+
+        // Filter Log Aktivitas
+        filteredLogs = allLogs.filter(l => {
+            const date = parseSistemDate(l.tanggal);
+            return date && date.getFullYear() == fYear && (date.getMonth() + 1) == fMonth;
+        });
+    }
+
+    // Render ulang tabel dengan data yang sudah difilter
+    renderDraftTable(filteredDrafts);
+    renderLogTable(filteredLogs);
+}
+
+// Helper: Parser Tanggal Kebal Banting (Bisa baca format Indonesia seperti 'Ags', 'Mei')
+function parseSistemDate(dateStr) {
+    if (!dateStr) return null;
+    let d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d; // Jika standar format JS, langsung kembalikan
+    
+    // Fallback jika format "18 Mar 2026" atau "12 Ags 2026"
+    const str = String(dateStr).toLowerCase();
+    const months = {
+        'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'mei': 4, 'may': 4, 'jun': 5, 
+        'jul': 6, 'ags': 7, 'aug': 7, 'sep': 8, 'okt': 9, 'oct': 9, 'nov': 10, 'des': 11, 'dec': 11
+    };
+    
+    for (let m in months) {
+        if (str.includes(m)) {
+            const yearMatch = str.match(/\d{4}/);
+            if (yearMatch) {
+                let tempDate = new Date();
+                tempDate.setFullYear(parseInt(yearMatch[0]), months[m], 1);
+                return tempDate;
+            }
+        }
+    }
+    return new Date(); // Return current date jika gagal sama sekali
+}
 
 // ==========================================
-// FUNGSI LOAD DAFTAR DRAFT
+// FUNGSI LOAD & RENDER DRAFT
 // ==========================================
 function loadDrafts() {
     const tbody = document.getElementById("draftTableBody");
-    if (!tbody) return; // Pengaman SPA
+    if (!tbody) return; 
     
     tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Memuat draf...</td></tr>`;
 
@@ -35,7 +94,8 @@ function loadDrafts() {
         .then(res => res.json())
         .then(res => {
             if (res.status === "ok") {
-                renderDraftTable(res.data);
+                allDrafts = res.data; // Simpan ke Master Data
+                filterTablesByMonth(); // Panggil fungsi filter (Otomatis merender)
             } else {
                 tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">Gagal memuat: ${res.message}</td></tr>`;
             }
@@ -52,14 +112,12 @@ function renderDraftTable(data) {
     tbody.innerHTML = "";
 
     if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">Belum ada draft yang tersimpan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">Belum ada draft tersimpan di bulan ini.</td></tr>`;
         return;
     }
 
     data.forEach(item => {
-        // Membersihkan nama file (Hilangkan .html dan format timestamp jika diinginkan)
         let displayName = item.name.replace('.html', '').replace(/_/g, ' ');
-        
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td class="px-4 fw-semibold text-primary">${displayName}</td>
@@ -74,6 +132,52 @@ function renderDraftTable(data) {
             </td>
         `;
         tbody.appendChild(tr);
+    });
+}
+
+// ==========================================
+// FUNGSI LOAD & RENDER LOG AKTIVITAS
+// ==========================================
+function loadLogAktivitas() {
+    const tbody = document.getElementById("logTableBody");
+    if(!tbody) return; 
+    
+    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Memuat Log Aktivitas...</td></tr>`;
+
+    fetch(`${API_SENDER_URL}?action=getLogs`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === "ok") {
+                allLogs = res.data; // Simpan ke Master Data
+                filterTablesByMonth(); // Panggil fungsi filter (Otomatis merender)
+            } else {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-danger small">Gagal memuat log: ${res.message}</td></tr>`;
+            }
+        })
+        .catch(err => {
+            console.error("Error Fetch Log:", err);
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-danger small">Gagal terhubung ke server untuk memuat log.</td></tr>`;
+        });
+}
+
+function renderLogTable(data) {
+    const tbody = document.getElementById("logTableBody");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-muted small">Belum ada riwayat pengiriman di bulan ini.</td></tr>`;
+        return;
+    }
+
+    data.forEach(log => {
+        tbody.innerHTML += `
+            <tr>
+                <td class="px-3 text-muted small">${log.tanggal}</td>
+                <td class="px-3 fw-semibold">${log.aktivitas}</td>
+                <td class="text-center"><span class="badge bg-success">${log.status}</span></td>
+            </tr>
+        `;
     });
 }
 
