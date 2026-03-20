@@ -16,6 +16,9 @@ var uniqueNaKategori = [];
 var uniqueNaLingkup = [];
 var uniqueNaLokasi = [];
 
+// Variabel internal DTGD
+var internalData = [];
+
 // FITUR BARU: Variabel Penyimpan Data Master untuk Filter
 var allDrafts = [];
 var allLogs = [];
@@ -334,6 +337,15 @@ function loadAllDataForFilter() {
                 uniqueNaLokasi = [...new Set(nonAlumniData.map(d => d.lokasi).filter(x => x))].sort();
             }
         });
+
+    // 3. Fetch Data Internal (BARU)
+    fetch(`${API_SENDER_URL}?action=getInternalData`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === "ok") {
+                internalData = res.data;
+            }
+        });
 }
 
 function loadLogAktivitas() {
@@ -393,20 +405,24 @@ function openSendModal(fileId, fileName) {
 function toggleFilterView() {
     const layer1 = document.getElementById("filterLayer1").value;
     
+    // Sembunyikan semua terlebih dahulu
+    document.getElementById("alumniFiltersContainer").style.display = "none";
+    document.getElementById("nonAlumniFiltersContainer").style.display = "none";
+    document.getElementById("internalFiltersContainer").style.display = "none";
+
     if (layer1 === "alumni") {
         document.getElementById("alumniFiltersContainer").style.display = "block";
-        document.getElementById("nonAlumniFiltersContainer").style.display = "none";
         document.getElementById("filterLayer2").value = "all";
         updateLayer3();
-    } else {
-        document.getElementById("alumniFiltersContainer").style.display = "none";
+    } else if (layer1 === "non_alumni") {
         document.getElementById("nonAlumniFiltersContainer").style.display = "block";
-        
-        // Populate Dropdown Non-Alumni
         fillNaSelect("naFilterKategori", uniqueNaKategori, "Kategori");
         fillNaSelect("naFilterLingkup", uniqueNaLingkup, "Lingkup");
         fillNaSelect("naFilterLokasi", uniqueNaLokasi, "Lokasi");
-        
+        calculateRecipients();
+    } else if (layer1 === "internal") {
+        document.getElementById("internalFiltersContainer").style.display = "block";
+        document.getElementById("intFilterStatus").value = "ALL";
         calculateRecipients();
     }
 }
@@ -483,6 +499,15 @@ function calculateRecipients() {
             const matchLing = (fLing === "ALL") || (String(d.lingkup) === String(fLing));
             const matchLok = (fLok === "ALL") || (String(d.lokasi) === String(fLok));
             return matchKat && matchLing && matchLok; // Ketiganya harus terpenuhi
+        });
+    }
+    else if (layer1 === "internal") {
+        // FILTER INTERNAL (Dosen / Tendik)
+        const fStatus = document.getElementById("intFilterStatus").value;
+        
+        filtered = internalData.filter(d => {
+            if (fStatus === "ALL") return true;
+            return String(d.status).toLowerCase() === String(fStatus).toLowerCase();
         });
     }
 
