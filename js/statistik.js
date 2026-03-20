@@ -15,8 +15,12 @@ async function loadStatistikData() {
         const res = await response.json();
         
         if (res.status === "ok") {
+            // PENGAMAN SPA: Cek apakah widget statistik masih ada di layar
+            const totalEl = document.getElementById('statTotalAlumni');
+            if (!totalEl) return; // Jika user sudah pindah halaman, hentikan proses!
+
             // 1. Update Total
-            document.getElementById('statTotalAlumni').innerText = res.data.total.toLocaleString('id-ID');
+            totalEl.innerText = res.data.total.toLocaleString('id-ID');
             
             // 2. Buat Chart
             renderChart(res.data.sebaran);
@@ -26,7 +30,9 @@ async function loadStatistikData() {
         }
     } catch (err) {
         console.error("Gagal memuat statistik", err);
-        document.getElementById('statTotalAlumni').innerText = "Error";
+        // Pengaman SPA untuk pesan error
+        const totalEl = document.getElementById('statTotalAlumni');
+        if (totalEl) totalEl.innerText = "Error"; 
     }
 }
 

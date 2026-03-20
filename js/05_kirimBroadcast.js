@@ -32,29 +32,38 @@ loadLogAktivitas();
 // FUNGSI FILTER WAKTU (BULAN & TAHUN)
 // ==========================================
 function filterTablesByMonth() {
-    const filterVal = document.getElementById("monthFilter").value; // Format: "YYYY-MM"
+    const monthFilterEl = document.getElementById("monthFilter");
+    if (!monthFilterEl) return;
     
-    let filteredDrafts = allDrafts;
-    let filteredLogs = allLogs;
+    // Panggil filter masing-masing secara terpisah
+    const filterVal = monthFilterEl.value;
+    filterDraftsOnly(filterVal);
+    filterLogsOnly(filterVal);
+}
 
+// Pisahkan Render Draft agar tidak mengganggu Log
+function filterDraftsOnly(filterVal = document.getElementById("monthFilter")?.value) {
+    let filteredDrafts = allDrafts;
     if (filterVal) {
         const [fYear, fMonth] = filterVal.split("-");
-
-        // Filter Draft
         filteredDrafts = allDrafts.filter(d => {
             const date = parseSistemDate(d.lastUpdated);
             return date && date.getFullYear() == fYear && (date.getMonth() + 1) == fMonth;
         });
+    }
+    renderDraftTable(filteredDrafts);
+}
 
-        // Filter Log Aktivitas
+// Pisahkan Render Log agar tidak mengganggu Draft
+function filterLogsOnly(filterVal = document.getElementById("monthFilter")?.value) {
+    let filteredLogs = allLogs;
+    if (filterVal) {
+        const [fYear, fMonth] = filterVal.split("-");
         filteredLogs = allLogs.filter(l => {
             const date = parseSistemDate(l.tanggal);
             return date && date.getFullYear() == fYear && (date.getMonth() + 1) == fMonth;
         });
     }
-
-    // Render ulang tabel dengan data yang sudah difilter
-    renderDraftTable(filteredDrafts);
     renderLogTable(filteredLogs);
 }
 
@@ -85,7 +94,7 @@ function parseSistemDate(dateStr) {
 }
 
 // ==========================================
-// FUNGSI LOAD & RENDER DRAFT
+// FUNGSI LOAD DRAFT
 // ==========================================
 function loadDrafts() {
     const tbody = document.getElementById("draftTableBody");
@@ -97,14 +106,13 @@ function loadDrafts() {
         .then(res => res.json())
         .then(res => {
             if (res.status === "ok") {
-                allDrafts = res.data; // Simpan ke Master Data
-                filterTablesByMonth(); // Panggil fungsi filter (Otomatis merender)
+                allDrafts = res.data; 
+                filterDraftsOnly(); // PERBAIKAN: Hanya render Draft saja
             } else {
                 tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">Gagal memuat: ${res.message}</td></tr>`;
             }
         })
         .catch(err => {
-            console.error(err);
             tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-danger">Error koneksi ke server.</td></tr>`;
         });
 }
@@ -139,7 +147,7 @@ function renderDraftTable(data) {
 }
 
 // ==========================================
-// FUNGSI LOAD & RENDER LOG AKTIVITAS
+// FUNGSI LOAD LOG AKTIVITAS
 // ==========================================
 function loadLogAktivitas() {
     const tbody = document.getElementById("logTableBody");
@@ -151,15 +159,14 @@ function loadLogAktivitas() {
         .then(res => res.json())
         .then(res => {
             if (res.status === "ok") {
-                allLogs = res.data; // Simpan ke Master Data
-                filterTablesByMonth(); // Panggil fungsi filter (Otomatis merender)
+                allLogs = res.data; 
+                filterLogsOnly(); // PERBAIKAN: Hanya render Log saja
             } else {
                 tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-danger small">Gagal memuat log: ${res.message}</td></tr>`;
             }
         })
         .catch(err => {
-            console.error("Error Fetch Log:", err);
-            tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-danger small">Gagal terhubung ke server untuk memuat log.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-danger small">Gagal terhubung ke server.</td></tr>`;
         });
 }
 
