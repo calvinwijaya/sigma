@@ -472,7 +472,51 @@ function updateLayer3() {
     calculateRecipients();
 }
 
+// ==========================================
+// LOGIKA MODE HYBRID (Milis vs Biasa)
+// ==========================================
+function toggleSendMode() {
+    const isMilis = document.getElementById("modeMilis").checked;
+    
+    if (isMilis) {
+        document.getElementById("modeBiasaContainer").style.display = "none";
+        document.getElementById("modeMilisContainer").style.display = "block";
+        document.getElementById("teksEstimasi").innerText = "Target Pengiriman";
+    } else {
+        document.getElementById("modeBiasaContainer").style.display = "block";
+        document.getElementById("modeMilisContainer").style.display = "none";
+        document.getElementById("teksEstimasi").innerText = "Estimasi Penerima";
+        
+        // Kembalikan filter ke awal
+        document.getElementById("filterLayer1").value = "alumni";
+        toggleFilterView();
+    }
+    
+    // Hitung ulang target setiap kali pindah mode
+    calculateRecipients();
+}
+
 function calculateRecipients() {
+    const isMilisMode = document.getElementById("modeMilis").checked;
+
+    if (isMilisMode) {
+        const milisSelector = document.getElementById("milisSelector");
+        const milisEmail = milisSelector.value;
+        finalTargetEmails = [];
+        
+        if (milisEmail !== "") {
+            const milisNama = milisSelector.options[milisSelector.selectedIndex].text.split(" (")[0];
+
+            finalTargetEmails.push({ email: milisEmail, nama: milisNama });
+            document.getElementById("recipientCount").innerHTML = `1 <span class="fs-6 fw-normal">Grup Milis</span>`;
+            document.getElementById("btnExecuteSend").disabled = false;
+        } else {
+            document.getElementById("recipientCount").innerHTML = `0 <span class="fs-6 fw-normal">Pilih Target</span>`;
+            document.getElementById("btnExecuteSend").disabled = true;
+        }
+        return; 
+    }
+
     const layer1 = document.getElementById("filterLayer1").value;
     let filtered = [];
 
@@ -496,7 +540,6 @@ function calculateRecipients() {
         }
     } 
     else if (layer1 === "non_alumni") {
-        // FILTER KOMBINASI NON-ALUMNI (Logika AND)
         const fKat = document.getElementById("naFilterKategori").value;
         const fLing = document.getElementById("naFilterLingkup").value;
         const fLok = document.getElementById("naFilterLokasi").value;
@@ -505,13 +548,11 @@ function calculateRecipients() {
             const matchKat = (fKat === "ALL") || (String(d.kategori) === String(fKat));
             const matchLing = (fLing === "ALL") || (String(d.lingkup) === String(fLing));
             const matchLok = (fLok === "ALL") || (String(d.lokasi) === String(fLok));
-            return matchKat && matchLing && matchLok; // Ketiganya harus terpenuhi
+            return matchKat && matchLing && matchLok;
         });
     }
     else if (layer1 === "internal") {
-        // FILTER INTERNAL (Dosen / Tendik)
         const fStatus = document.getElementById("intFilterStatus").value;
-        
         filtered = internalData.filter(d => {
             if (fStatus === "ALL") return true;
             return String(d.status).toLowerCase() === String(fStatus).toLowerCase();
@@ -520,13 +561,13 @@ function calculateRecipients() {
 
     // Ekstrak array email saja yang valid
     finalTargetEmails = filtered
-        .filter(d => d.email && String(d.email).includes("@")) // Pastikan email valid
+        .filter(d => d.email && String(d.email).includes("@")) 
         .map(d => ({ 
             email: String(d.email).trim(), 
-            nama: d.nama || "Bapak/Ibu" // Fallback jika kolom nama kosong
+            nama: d.nama || "Bapak/Ibu" 
         }));
     
-    document.getElementById("recipientCount").innerText = finalTargetEmails.length;
+    document.getElementById("recipientCount").innerHTML = `${finalTargetEmails.length} <span class="fs-6 fw-normal">Email Valid</span>`;
     document.getElementById("btnExecuteSend").disabled = finalTargetEmails.length === 0;
 }
 
@@ -556,11 +597,11 @@ function confirmSendBroadcast() {
 }
 
 function executeSending(senderName) {
-    // Tutup modal agar user tidak ngeklik dua kali
     const modalEl = document.getElementById('sendModal');
     bootstrap.Modal.getInstance(modalEl).hide();
     
     Loading.show();
+    const isMilisMode = document.getElementById("modeMilis").checked;
 
     fetch(API_SENDER_URL, {
         method: "POST",
@@ -572,7 +613,8 @@ function executeSending(senderName) {
                 fileId: fileIdToSend,
                 draftName: document.getElementById("sendDraftNameDisplay").innerText,
                 targetEmails: finalTargetEmails,
-                senderName: senderName
+                senderName: "Departemen Teknik Geodesi UGM", 
+                isMilis: isMilisMode 
             }
         })
     })

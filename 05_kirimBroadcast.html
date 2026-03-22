@@ -97,54 +97,84 @@
             <div class="modal-body bg-light">
                 <h6 class="fw-bold text-dark mb-3" id="sendDraftNameDisplay">Nama Draft</h6>
                 
-                <div class="mb-3">
-                    <label class="form-label small fw-semibold">Layer 1: Target Audiens</label>
-                    <select class="form-select shadow-sm" id="filterLayer1" onchange="toggleFilterView()">
-                        <option value="alumni">Data Alumni</option>
-                        <option value="non_alumni">Data Non-Alumni</option>
-                        <option value="internal">Internal DTGD (Dosen/Tendik)</option>
-                    </select>
+                <div class="mb-3 border-bottom pb-3">
+                    <label class="form-label small fw-bold text-dark mb-2">Mode Pengiriman</label>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="sendMode" id="modeBiasa" value="biasa" checked onchange="toggleSendMode()">
+                            <label class="form-check-label small" for="modeBiasa">
+                                <strong>Presisi / Looping</strong> (Maks. 500 Email/Hari)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="sendMode" id="modeMilis" value="milis" onchange="toggleSendMode()">
+                            <label class="form-check-label small text-success" for="modeMilis">
+                                <strong>Massal via Milis</strong> (Tak Terbatas, 1 Klik)
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="alumniFiltersContainer">
+                <div id="modeBiasaContainer">
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Layer 2: Metode Filter</label>
-                        <select class="form-select shadow-sm" id="filterLayer2" onchange="updateLayer3()">
-                            <option value="all">Kirim ke Semua Alumni (Tanpa Filter)</option>
-                            <option value="angkatan">Berdasarkan Angkatan</option>
-                            <option value="kategori">Berdasarkan Kategori Umur/Angkatan</option>
-                            <option value="lokasi">Berdasarkan Lokasi</option>
+                        <label class="form-label small fw-semibold">Layer 1: Target Audiens</label>
+                        <select class="form-select shadow-sm" id="filterLayer1" onchange="toggleFilterView()">
+                            <option value="alumni">Data Alumni</option>
+                            <option value="non_alumni">Data Non-Alumni</option>
+                            <option value="internal">Internal DTGD (Dosen/Tendik)</option>
                         </select>
                     </div>
-                    <div class="mb-3" id="layer3Container" style="display: none;">
-                        <label class="form-label small fw-semibold text-primary">Layer 3: Pilih Spesifikasi</label>
-                        <select class="form-select border-primary shadow-sm" id="filterLayer3" onchange="calculateRecipients()"></select>
+
+                    <div id="alumniFiltersContainer">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Layer 2: Metode Filter</label>
+                            <select class="form-select shadow-sm" id="filterLayer2" onchange="updateLayer3()">
+                                <option value="all">Kirim ke Semua Alumni (Tanpa Filter)</option>
+                                <option value="angkatan">Berdasarkan Angkatan</option>
+                                <option value="kategori">Berdasarkan Kategori Umur/Angkatan</option>
+                                <option value="lokasi">Berdasarkan Lokasi</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="layer3Container" style="display: none;">
+                            <label class="form-label small fw-semibold text-primary">Layer 3: Pilih Spesifikasi</label>
+                            <select class="form-select border-primary shadow-sm" id="filterLayer3" onchange="calculateRecipients()"></select>
+                        </div>
+                    </div>
+
+                    <div id="nonAlumniFiltersContainer" style="display: none;">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Kategori Instansi</label>
+                            <select class="form-select shadow-sm border-success" id="naFilterKategori" onchange="calculateRecipients()"></select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Lingkup Wilayah</label>
+                            <select class="form-select shadow-sm border-success" id="naFilterLingkup" onchange="calculateRecipients()"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Lokasi Spesifik (Prov/Negara)</label>
+                            <select class="form-select shadow-sm border-success" id="naFilterLokasi" onchange="calculateRecipients()"></select>
+                        </div>
+                    </div>
+
+                    <div id="internalFiltersContainer" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-info">Pilih Spesifikasi Internal</label>
+                            <select class="form-select border-info shadow-sm" id="intFilterStatus" onchange="calculateRecipients()">
+                                <option value="ALL">Kirim ke Semua (Dosen & Tendik)</option>
+                                <option value="Dosen">Dosen Saja</option>
+                                <option value="Tendik">Tendik Saja</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div id="nonAlumniFiltersContainer" style="display: none;">
-                     <div class="mb-2">
-                        <label class="form-label small fw-semibold">Kategori Instansi</label>
-                        <select class="form-select shadow-sm border-success" id="naFilterKategori" onchange="calculateRecipients()"></select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label small fw-semibold">Lingkup Wilayah</label>
-                        <select class="form-select shadow-sm border-success" id="naFilterLingkup" onchange="calculateRecipients()"></select>
-                    </div>
+                <div id="modeMilisContainer" style="display: none;">
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Lokasi Spesifik (Prov/Negara)</label>
-                        <select class="form-select shadow-sm border-success" id="naFilterLokasi" onchange="calculateRecipients()"></select>
-                    </div>
-                </div>
-
-                <div id="internalFiltersContainer" style="display: none;">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold text-info">Pilih Spesifikasi Internal</label>
-                        <select class="form-select border-info shadow-sm" id="intFilterStatus" onchange="calculateRecipients()">
-                            <option value="ALL">Kirim ke Semua (Dosen & Tendik)</option>
-                            <option value="Dosen">Dosen Saja</option>
-                            <option value="Tendik">Tendik Saja</option>
-                        </select>
+                        <label class="form-label small fw-semibold text-success">Pilih Milis / Group Tujuan</label>
+                        <select class="form-select shadow-sm border-success" id="milisSelector" onchange="calculateRecipients()">
+                            <option value="">-- Pilih Milis --</option>
+                            <option value="alumni-dtgd-all@googlegroups.com">Semua Alumni (alumni-dtgd-all@googlegroups.com)</option>
+                            </select>
                     </div>
                 </div>
 
@@ -153,7 +183,7 @@
                 <div class="alert alert-info py-2 mb-0 d-flex align-items-center">
                     <i class="bi bi-people-fill fs-4 me-3"></i>
                     <div>
-                        <div class="small text-muted">Estimasi Penerima</div>
+                        <div class="small text-muted" id="teksEstimasi">Estimasi Penerima</div>
                         <h4 class="fw-bold mb-0 text-dark" id="recipientCount">0 <span class="fs-6 fw-normal">Email Valid</span></h4>
                     </div>
                 </div>

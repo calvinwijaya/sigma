@@ -207,6 +207,21 @@ function togglePersonalisasi() {
     document.getElementById("sectionSapaan").style.display = isChecked ? "block" : "none";
 }
 
+function toggleMilisMode() {
+    const isMilisChecked = document.getElementById("useMilis").checked;
+    const personalisasiCheckbox = document.getElementById("usePersonalisasi");
+    
+    if (isMilisChecked) {
+        // Jika Milis aktif, matikan dan gembok personalisasi
+        personalisasiCheckbox.checked = false;
+        personalisasiCheckbox.disabled = true;
+    } else {
+        // Jika Milis mati, buka gembok personalisasi
+        personalisasiCheckbox.disabled = false;
+    }
+    togglePersonalisasi(); // Sembunyikan form sapaan
+}
+
 function getFinalHTML(isPreview = false) {
     const templateType = document.getElementById("templateSelector").value;
     let htmlContent = "";

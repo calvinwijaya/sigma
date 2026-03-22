@@ -36,6 +36,14 @@
 
                     <div class="card bg-light border-0 shadow-sm mb-4">
                         <div class="card-body py-3">
+                            <div class="form-check form-switch mb-3 border-bottom pb-3">
+                                <input class="form-check-input" type="checkbox" id="useMilis" onchange="toggleMilisMode(); updateLivePreview();">
+                                <label class="form-check-label fw-bold text-success small" for="useMilis">
+                                    <i class="bi bi-megaphone-fill me-1"></i> Rencana Pengiriman Massal (Milis)
+                                </label>
+                                <div class="form-text" style="font-size: 0.7rem;">Aktifkan ini jika draf akan dikirim via Google Groups. Personalisasi nama akan dinonaktifkan.</div>
+                            </div>
+
                             <div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" id="usePersonalisasi" onchange="togglePersonalisasi(); updateLivePreview();">
                                 <label class="form-check-label fw-bold text-primary small" for="usePersonalisasi">
@@ -48,7 +56,7 @@
                                     <input type="text" class="form-control" id="inputSapaan" placeholder="Contoh: Yth. / Halo / Dear" value="Yth." onkeyup="updateLivePreview()">
                                     <span class="input-group-text bg-white border-start-0 text-muted">{Nama Penerima},</span>
                                 </div>
-                                <div class="form-text" style="font-size: 0.7rem;">Sistem otomatis memanggil nama alumni/kolega dari database.</div>
+                                <div class="form-text" style="font-size: 0.7rem;">Sistem otomatis memanggil nama dari database (Tidak berlaku untuk Milis).</div>
                             </div>
                         </div>
                     </div>
