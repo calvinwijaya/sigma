@@ -6,7 +6,7 @@ const DB_GAS_URL = "https://script.google.com/macros/s/AKfycby6Kzgn4hNiSNAbcUZ7m
 const DB_NonAlumniGAS_URL = "https://script.google.com/macros/s/AKfycbzT4UXxxOzCUkEZB67rMQbOamtIGdUq-NOuX0AILxSBZSWWUNjZFr_bi1VDDVa4fzcZ/exec";
 
 // API untuk broadcast newsletter
-const API_SENDER_URL = "https://script.google.com/macros/s/AKfycbwxpJO5B7aYEGyaWBheB83WoSDo5vYlnAWYojM5WSW_u33Lk5hNlp2rjp47RXNEzs1B/exec";
+const API_SENDER_URL = "https://script.google.com/macros/s/AKfycbxhURWDcoA96h5sGkv0YDxhaTHX-rH7SELn54Mlt9U5-vM0WIZNfQ2Ny0rJcC7mMmfy/exec";
 
 // API untuk buat peta dan statistik
 const API_STATISTIK_URL = "https://script.google.com/macros/s/AKfycbwfrJQ-6Bf2ej4KD13gmSrTDJ1DFsl5ZLZsYch6PR4fMrLTyNaxry1VmUnPKXBKxyDQOg/exec";

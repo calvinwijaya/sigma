@@ -572,25 +572,68 @@ function calculateRecipients() {
 }
 
 // ==========================================
-// EKSEKUSI PENGIRIMAN
+// EKSEKUSI PENGIRIMAN & CEK KUOTA
 // ==========================================
-function confirmSendBroadcast() {
-    // Ambil data user yang sedang login dari session
-    const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
-    const senderName = userData.nama || "Admin Geodesi";
-    const senderEmail = userData.email || "Sistem";
+async function confirmSendBroadcast() {
+    const isMilisMode = document.getElementById("modeMilis").checked;
+    if (isMilisMode) {
+        showFinalConfirm(500, true);
+        return;
+    }
+
+    Loading.show();
+    try {
+        const response = await fetch(`${API_SENDER_URL}?action=getQuota`);
+        const res = await response.json();
+        Loading.hide();
+
+        if (res.status === "ok") {
+            showFinalConfirm(res.data.quota, false);
+        } else {
+            Swal.fire("Error", "Gagal mengecek kuota harian.", "error");
+        }
+    } catch (err) {
+        Loading.hide();
+        Swal.fire("Error", "Gagal terhubung ke server.", "error");
+    }
+}
+
+function showFinalConfirm(sisaKuota, isMilis) {
+    const targetCount = finalTargetEmails.length;
+    let titleText = 'Konfirmasi Pengiriman';
+    let htmlText = `Anda akan mengirimkan broadcast ini kepada <strong>${targetCount} Email</strong>.<br><br>`;
+    let isQueueing = false;
+
+    // LOGIKA PERINGATAN KUOTA (Hanya untuk Mode Presisi)
+    if (!isMilis) {
+        if (targetCount <= sisaKuota) {
+            htmlText += `<span class="text-success"><i class="bi bi-check-circle-fill"></i> Kuota harian aman (Sisa: ${sisaKuota}).</span>`;
+        } else {
+            isQueueing = true;
+            titleText = 'Peringatan Kuota Harian!';
+            htmlText = `
+                <div class="alert alert-warning text-start small">
+                    <strong>Sisa Kuota Hari Ini: ${sisaKuota} Email</strong><br>
+                    Target Pengiriman: ${targetCount} Email<br><br>
+                    Sistem akan mengirimkan <strong>${sisaKuota} email sekarang</strong>, dan sisanya <strong>(${targetCount - sisaKuota} email) akan dijadwalkan ulang (Antrean)</strong> untuk dikirim otomatis besok.
+                </div>
+            `;
+        }
+    }
 
     Swal.fire({
-        title: 'Konfirmasi Pengiriman',
-        html: `Anda akan mengirimkan broadcast ini kepada <strong>${finalTargetEmails.length} Email</strong>.<br><br>`,
-        icon: 'warning',
+        title: titleText,
+        html: htmlText,
+        icon: isQueueing ? 'warning' : 'info',
         showCancelButton: true,
-        confirmButtonColor: '#198754',
+        confirmButtonColor: isQueueing ? '#f59f00' : '#198754',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, Kirim Sekarang!',
+        confirmButtonText: isQueueing ? 'Ya, Kirim & Jadwalkan Sisanya' : 'Ya, Kirim Sekarang!',
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
+            const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
+            const senderName = userData.nama || "Admin Geodesi";
             executeSending(senderName);
         }
     });
@@ -621,8 +664,8 @@ function executeSending(senderName) {
     .then(res => res.json())
     .then(res => {
         if (res.status === "ok") {
-            Swal.fire("Berhasil Terkirim!", res.message, "success");
-            loadLogAktivitas(); // Refresh tabel log di halaman
+            Swal.fire("Selesai diproses!", res.message, "success");
+            loadLogAktivitas(); 
         } else {
             Swal.fire("Gagal", res.message, "error");
         }
