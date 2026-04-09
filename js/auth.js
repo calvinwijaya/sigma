@@ -1,6 +1,16 @@
 function handleCredentialResponse(response) {
   const idToken = response.credential;
 
+  // 1. Tampilkan Loading Spinner menggunakan SweetAlert
+  Swal.fire({
+    title: 'Memeriksa Kredensial...',
+    text: 'Mohon tunggu sebentar',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
   fetch("https://script.google.com/macros/s/AKfycbx4mw34ql3TzTeFWsKLcJ0UftB_S4AdRIQqvqfYKEOQLK6E1FlzDypzwc1yzSfBdUsg/exec", {
     method: "POST",
     body: JSON.stringify({
@@ -12,32 +22,37 @@ function handleCredentialResponse(response) {
   .then(data => {
     if (data.status === "ok") {
       sessionStorage.setItem("user", JSON.stringify(data.user));
-      showSuccessMessage(
-            "Login berhasil! Membuka SIGMA..."
-      );
+      // Tampilkan popup sukses
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Berhasil!',
+        text: 'Membuka SIGMA...',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#1e7e34' // Warna hijau
+      }).then((result) => {
+        // Baru pindah ke dashboard.html jika user klik "OK"
+        if (result.isConfirmed) {
+          window.location.href = "dashboard.html";
+        }
+      });
 
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 1500);
     } else {
-      showErrorMessage(data.message || "Login failed.");
+      // Tampilkan popup error
+      Swal.fire({
+        icon: 'error',
+        title: 'Akses Ditolak',
+        text: data.message || "Gagal melakukan verifikasi.",
+        confirmButtonColor: '#b02a37'
+      });
     }
   })
   .catch(err => {
     console.error(err);
-    alert("Authentication error.");
+    Swal.fire({
+      icon: 'error',
+      title: 'Kesalahan Sistem',
+      text: 'Terjadi masalah saat menghubungi server.',
+      confirmButtonColor: '#b02a37'
+    });
   });
 }
-
-function showSuccessMessage(message) {
-  const box = document.getElementById("login-message");
-  box.textContent = message;
-  box.className = "success";
-}
-
-function showErrorMessage(message) {
-  const box = document.getElementById("login-message");
-  box.textContent = message;
-  box.className = "error";
-}
-

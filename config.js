@@ -10,3 +10,7 @@ const API_SENDER_URL = "https://script.google.com/macros/s/AKfycbxhURWDcoA96h5sG
 
 // API untuk buat peta dan statistik
 const API_STATISTIK_URL = "https://script.google.com/macros/s/AKfycbwfrJQ-6Bf2ej4KD13gmSrTDJ1DFsl5ZLZsYch6PR4fMrLTyNaxry1VmUnPKXBKxyDQOg/exec";
+
+const ADMIN_EMAILS = [
+    "calvin.wijaya@mail.ugm.ac.id",
+    "cecep.pratama@ugm.ac.id"];
