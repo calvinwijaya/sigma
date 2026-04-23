@@ -1,3 +1,5 @@
+const GAS_LOGIN = "https://script.google.com/macros/s/AKfycbx4mw34ql3TzTeFWsKLcJ0UftB_S4AdRIQqvqfYKEOQLK6E1FlzDypzwc1yzSfBdUsg/exec";
+
 // API untuk simpan newsletter
 const API_NEWSLETTER_URL = "https://script.google.com/macros/s/AKfycbyrc2ppAXcSCCVzRLQTr5l3DyIXIDolb_LMs7IJvxbaQTu9nrgPkFHndTSUOTWcO3XypQ/exec";
 
