@@ -98,18 +98,18 @@
                 <h6 class="fw-bold text-dark mb-3" id="sendDraftNameDisplay">Nama Draft</h6>
                 
                 <div class="mb-3 border-bottom pb-3">
-                    <label class="form-label small fw-bold text-dark mb-2">Mode Pengiriman</label>
+                    <label class="form-label small fw-bold text-dark mb-2">Pilih Mode Pengiriman</label>
                     <div class="d-flex flex-column gap-2">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="sendMode" id="modeBiasa" value="biasa" checked onchange="toggleSendMode()">
                             <label class="form-check-label small" for="modeBiasa">
-                                <strong>Presisi / Looping</strong> (Maks. 500 Email/Hari)
+                                <strong>Presisi / Looping</strong> (Personalisasi Aktif, Maks. 500 Email/Hari)
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="sendMode" id="modeMilis" value="milis" onchange="toggleSendMode()">
                             <label class="form-check-label small text-success" for="modeMilis">
-                                <strong>Massal via Milis</strong> (Tak Terbatas, 1 Klik)
+                                <strong>Massal via Milis</strong> (Tak Terbatas, Pengiriman Instan)
                             </label>
                         </div>
                     </div>
@@ -170,11 +170,15 @@
 
                 <div id="modeMilisContainer" style="display: none;">
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold text-success">Pilih Milis / Group Tujuan</label>
+                        <label class="form-label small fw-semibold text-success">Pilih Milis Tujuan</label>
                         <select class="form-select shadow-sm border-success" id="milisSelector" onchange="calculateRecipients()">
                             <option value="">-- Pilih Milis --</option>
-                            <option value="alumni-dtgd-all@googlegroups.com">Semua Alumni (alumni-dtgd-all@googlegroups.com)</option>
-                            </select>
+                            <option value="dosen.dtgd@ugm.ac.id">Dosen (dosen.dtgd@ugm.ac.id)</option>
+                            <option value="tendik.dtgd@ugm.ac.id">Tendik (tendik.dtgd@ugm.ac.id)</option>
+                            <option value="mahasiswas1.dtgd@ugm.ac.id">Mahasiswa S1 (mahasiswas1.dtgd@ugm.ac.id)</option>
+                            <option value="mahasiswapasca.dtgd@ugm.ac.id">Mahasiswa S2 & S3 (mahasiswapasca.dtgd@ugm.ac.id)</option>
+                            <option value="alumni.dtgd@ugm.ac.id">Alumni (alumni.dtgd@ugm.ac.id)</option>
+                        </select>
                     </div>
                 </div>
 

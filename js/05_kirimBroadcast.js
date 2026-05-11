@@ -481,18 +481,16 @@ function toggleSendMode() {
     if (isMilis) {
         document.getElementById("modeBiasaContainer").style.display = "none";
         document.getElementById("modeMilisContainer").style.display = "block";
-        document.getElementById("teksEstimasi").innerText = "Target Pengiriman";
+        document.getElementById("teksEstimasi").innerText = "Target Milis";
     } else {
         document.getElementById("modeBiasaContainer").style.display = "block";
         document.getElementById("modeMilisContainer").style.display = "none";
         document.getElementById("teksEstimasi").innerText = "Estimasi Penerima";
         
-        // Kembalikan filter ke awal
         document.getElementById("filterLayer1").value = "alumni";
         toggleFilterView();
     }
     
-    // Hitung ulang target setiap kali pindah mode
     calculateRecipients();
 }
 
@@ -514,7 +512,7 @@ function calculateRecipients() {
             document.getElementById("recipientCount").innerHTML = `0 <span class="fs-6 fw-normal">Pilih Target</span>`;
             document.getElementById("btnExecuteSend").disabled = true;
         }
-        return; 
+        return; // Hentikan fungsi di sini
     }
 
     const layer1 = document.getElementById("filterLayer1").value;

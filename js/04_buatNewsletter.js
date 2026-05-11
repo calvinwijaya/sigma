@@ -212,14 +212,12 @@ function toggleMilisMode() {
     const personalisasiCheckbox = document.getElementById("usePersonalisasi");
     
     if (isMilisChecked) {
-        // Jika Milis aktif, matikan dan gembok personalisasi
-        personalisasiCheckbox.checked = false;
+        personalisasiCheckbox.checked = false; 
         personalisasiCheckbox.disabled = true;
     } else {
-        // Jika Milis mati, buka gembok personalisasi
         personalisasiCheckbox.disabled = false;
     }
-    togglePersonalisasi(); // Sembunyikan form sapaan
+    togglePersonalisasi();
 }
 
 function getFinalHTML(isPreview = false) {
@@ -320,7 +318,8 @@ function getFinalHTML(isPreview = false) {
         waktu: document.getElementById("inputWaktu")?.value || "",
         lokasi: document.getElementById("inputLokasi")?.value || "",
         fotoProfil: document.getElementById("inputFotoProfil")?.value || "",
-        gambarPromo: document.getElementById("inputGambarPromo")?.value || ""
+        gambarPromo: document.getElementById("inputGambarPromo")?.value || "",
+        useMilis: document.getElementById("useMilis").checked
     };
 
     const jsonString = JSON.stringify(formState);
